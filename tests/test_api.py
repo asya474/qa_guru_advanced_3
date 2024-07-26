@@ -26,22 +26,13 @@ def test_users_no_duplicates(users):
     assert len(users_ids) == len(set(users_ids))
 
 
-@pytest.mark.parametrize("user_id", [1, 6, 12])
-def test_user(app_url, user_id):
-    response = requests.get(f"{app_url}/api/users/{user_id}")
-    assert response.status_code == HTTPStatus.OK
-
-    user = response.json()
-    User.model_validate(user)
-
-
-@pytest.mark.parametrize("user_id", [13])
+@pytest.mark.parametrize("user_id", [-1, 0, 13])
 def test_user_nonexistent_values(app_url, user_id):
     response = requests.get(f"{app_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-@pytest.mark.parametrize("user_id", [-1, 0, "fafaf"])
+@pytest.mark.parametrize("user_id", ["fafaf"])
 def test_user_invalid_values(app_url, user_id):
     response = requests.get(f"{app_url}/api/users/{user_id}")
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY

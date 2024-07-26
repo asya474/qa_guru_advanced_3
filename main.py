@@ -1,36 +1,63 @@
-import json
-from http import HTTPStatus
-
-
-import uvicorn
+from typing import List, Union
 from fastapi import FastAPI, HTTPException
-
+from fastapi_pagination import Page, add_pagination, paginate
 from models.AppStatus import AppStatus
 from models.User import User
+import json
+from http import HTTPStatus
+import uvicorn
 
+# Create an instance of the FastAPI application
 app = FastAPI()
 
-users: list[User] = []
+# Create an empty list to store the user objects
+users: List[User] = []
 
 
-@app.get("/status", status_code=HTTPStatus.OK)
+# Define an HTTP GET endpoint for the "/status" path
+@app.get(
+    "/status",
+    status_code=HTTPStatus.OK,
+    response_model=AppStatus
+)
 def status() -> AppStatus:
     return AppStatus(users=bool(users))
 
 
-@app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
-def get_user(user_id: int) -> User:
-    if user_id < 1:
-        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid user id")
-    if user_id > len(users):
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
-    return users[user_id - 1]
+# Define an HTTP GET endpoint for the "/api/users/{user_id}" path
+@app.get(
+    "/api/users/{user_id}",
+    status_code=HTTPStatus.OK,
+    response_model=Page[User]
+)
+def get_user(user_id: int) -> Page[User]:
+    if user_id < 1 or user_id > len(users):
+        raise HTTPException(
+            status_code=HTTPStatus.NOT_FOUND,
+            detail="Invalid user id"
+        )
+
+    try:
+        user = users[user_id - 1]
+        return paginate([user])  # Оборачиваем пользователя в список для пагинации
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 
-@app.get("/api/users/", status_code=HTTPStatus.OK)
-def get_users() -> list[User]:
+@app.get(
+    "/api/users/",
+    status_code=HTTPStatus.OK,
+    response_model=List[User]
+)
+def get_users() -> List[User]:
     return users
 
+
+# Add pagination support to the FastAPI application
+add_pagination(app)
 
 if __name__ == "__main__":
     with open("users.json") as f:

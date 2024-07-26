@@ -1,10 +1,13 @@
 
-from pydantic import BaseModel, EmailStr, HttpUrl
+from pydantic import BaseModel, EmailStr, Field
 
 
 class User(BaseModel):
-    id: int
+    id: int | None = Field(default=None)
     email: EmailStr
     first_name: str
     last_name: str
-    avatar: HttpUrl
+    avatar: str
+
+
+
