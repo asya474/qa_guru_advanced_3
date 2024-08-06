@@ -30,7 +30,7 @@ def status() -> AppStatus:
     status_code=HTTPStatus.OK,
     response_model=Page[User]
 )
-def get_user(user_id: int) -> Page[User]:
+def get_user(user_id: int) -> User:
     if user_id < 1 or user_id > len(users):
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
@@ -39,7 +39,7 @@ def get_user(user_id: int) -> Page[User]:
 
     try:
         user = users[user_id - 1]
-        return paginate([user])  # Оборачиваем пользователя в список для пагинации
+        return user
     except Exception as e:
         raise HTTPException(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -50,11 +50,16 @@ def get_user(user_id: int) -> Page[User]:
 @app.get(
     "/api/users/",
     status_code=HTTPStatus.OK,
-    response_model=List[User]
+    response_model=Page[User]
 )
-def get_users() -> List[User]:
-    return users
-
+def get_users() -> Page[User]:
+    try:
+        return paginate(users)
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 # Add pagination support to the FastAPI application
 add_pagination(app)

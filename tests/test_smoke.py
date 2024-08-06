@@ -10,4 +10,4 @@ def test_status_ok(app_url):
 
 def test_status_ok(app_url):
     response = requests.get(f"{app_url}/status").json()
-    assert response["users"] == True
+    assert response["users"]
