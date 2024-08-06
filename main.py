@@ -16,7 +16,7 @@ users: List[User] = []
 
 # Define an HTTP GET endpoint for the "/status" path
 @app.get(
-    "/status",
+    "/api/status",
     status_code=HTTPStatus.OK,
     response_model=AppStatus
 )
@@ -25,26 +25,13 @@ def status() -> AppStatus:
 
 
 # Define an HTTP GET endpoint for the "/api/users/{user_id}" path
-@app.get(
-    "/api/users/{user_id}",
-    status_code=HTTPStatus.OK,
-    response_model=Page[User]
-)
+@app.get("/api/users/{user_id}", status_code=HTTPStatus.OK)
 def get_user(user_id: int) -> User:
-    if user_id < 1 or user_id > len(users):
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail="Invalid user id"
-        )
-
-    try:
-        user = users[user_id - 1]
-        return user
-    except Exception as e:
-        raise HTTPException(
-            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            detail=str(e)
-        )
+    if user_id < 1:
+        raise HTTPException(status_code=HTTPStatus.UNPROCESSABLE_ENTITY, detail="Invalid user id")
+    if user_id > len(users):
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="User not found")
+    return users[user_id - 1]
 
 
 @app.get(

@@ -4,7 +4,7 @@ import requests
 
 
 def test_status_ok(app_url):
-    response = requests.get(f"{app_url}/status")
+    response = requests.get(f"{app_url}/api/status/")
     assert response.status_code == HTTPStatus.OK
-    assert response["users"], "Init data are absent"
+    assert response.json()["users"]
 
